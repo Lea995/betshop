@@ -2,6 +2,7 @@ import Vue from 'vue'
 import App from './App.vue'
 import * as VueGoogleMaps from 'vue2-google-maps'
 
+
 const eventBus = new Vue({
   data: function() {
       return {
@@ -14,7 +15,7 @@ const eventBus = new Vue({
 Vue.mixin({
   data: function() {
       return {
-          eventBus: eventBus,
+        eventBus: eventBus,
       }
   }
 });

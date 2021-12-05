@@ -1,6 +1,11 @@
 <template>
 <div>
-    <div class="day-container" :class="{today: isToday(day.dt_iso)}" v-for="day in dayForecast" :key="day.date">
+    <div 
+      class="day-container" 
+      :class="{today:isToday(day.dt_iso)}" 
+      v-for="day in dayForecast" 
+      :key="day.date"
+    >
         <div>
             <p><strong>{{day.date}}</strong><em v-if="isToday(day.dt_iso)"> (today)</em></p>
             <p class="capitalize">{{day.description}}</p>
@@ -26,38 +31,30 @@ export default {
             api_key: '078fadfe54abfc1d429dfdb585f18f6c',
         }
     },
-    created () {
-        axios
-        .get('https://api.openweathermap.org/data/2.5/forecast', {
-          params: {
-             lat: this.eventBus.selectedMarker.location.lat,
-             lon: this.eventBus.selectedMarker.location.lng,
-             units: 'metric',
-             appid: this.api_key
-          }
-        })
-        .then(response =>
-            (this.weatherList = response.data.list)
-            
-        ).catch(function (error) {
-            console.log(error);
-        })
+    watch: {
+        'eventBus.selectedMarker': {
+            handler(newVal){
+                this.getWeather(newVal);
+            },
+            deep: true,
+            immediate: true
+        }
     },
     computed: {
-        dayForecast () {
-             let forecast = []
-             for (let i=0; i<this.weatherList.length; i+=8) {
-                 if(this.weatherList[i]) {
-                     let date= (this.weatherList[i].dt_txt).split(" ");
-                     let dateISO = DateTime.fromISO(date[0]);
-                     let day = {
+        dayForecast() {
+            let forecast = [];
+            for (let i=0; i<this.weatherList.length; i+=8) {
+                if(this.weatherList[i]) {
+                    let date= (this.weatherList[i].dt_txt).split(" ");
+                    let dateISO = DateTime.fromISO(date[0]);
+                    let day = {
                         dt_iso: dateISO,
                         date: dateISO.toFormat('EEE dd LLL'),
                         description: this.weatherList[i].weather[0].description,
                         clouds: this.weatherList[i].clouds.all,
                         pressure: this.weatherList[i].main.pressure,
                         temp_min: this.weatherList[i].main.temp_min,
-                        temp_max: this.weatherList[i].main.temp_max
+                        temp_max: this.weatherList[i].main.temp_max,
                     }
                     forecast.push(day);
                 }
@@ -66,6 +63,22 @@ export default {
         }
     },
     methods: {
+        getWeather(newMarker){
+            axios
+            .get('https://api.openweathermap.org/data/2.5/forecast', {
+                params: {
+                    lat: newMarker.location.lat,
+                    lon: newMarker.location.lng,
+                    units: 'metric',
+                    appid: this.api_key
+                }
+            })
+            .then(response =>
+            (this.weatherList = response.data.list)
+            ).catch(function (error) {
+            console.log(error);
+            })
+        },
         color (temperature) {
             if(temperature < 14){
                 return 'blue';
@@ -130,7 +143,6 @@ p::first-letter{
     justify-content: space-between;
     font-size: 11px;
     padding: 15px 18px;
-    width: 215px;
     padding: 10px 18px;
 }
 
@@ -145,7 +157,6 @@ p::first-letter{
 
 .today {
     border-left: 2px solid  #3e5b9d;
-
 }
 
 </style>

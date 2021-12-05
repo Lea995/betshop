@@ -18,7 +18,6 @@
         <img src="../assets/ic_bet_shop_hours.png" alt="watch icon" class="icon">
         <p class="info">{{workingHours}}</p>
     </div>
-
 </div>
 </template>
 
@@ -27,10 +26,6 @@ import { DateTime } from "luxon";
 
 export default {
   name: 'BetshopInfo',
-  props: {
-
-  }
-  ,
   data() {
     return {
         workingHours: null,
@@ -65,7 +60,6 @@ export default {
 
 .info-container {
     padding: 22px 18px;
-    width: 215px;
     background-color: #fff;
 }
 
