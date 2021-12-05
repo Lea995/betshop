@@ -14,7 +14,7 @@ const eventBus = new Vue({
 Vue.mixin({
   data: function() {
       return {
-          eventBus: eventBus,
+        eventBus: eventBus,
       }
   }
 });

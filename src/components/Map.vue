@@ -1,10 +1,11 @@
 <template>
-<div class="map-container">
+<div class="map-container ">
   <GmapMap
     :center='center'
     :zoom='15'
     ref = 'myMap'
-    style='width:100%;  height: 580px;'
+    style='width:100%;  height:580px;'
+    @bounds_changed="getBounds($event)"
   >
     <GmapMarker
       :key="index"
@@ -34,49 +35,73 @@ export default {
       selectedIndex: null,
       pinNormal,
       pinActive,
+      mapBounds: {
+        southWest: {
+          lat: null,
+          lng: null
+        },
+        northEast: {
+          lat: null,
+          lng: null
+        },
+      },
     }
   },
-   created () {
-     navigator.geolocation.getCurrentPosition(position => {
+  created () {
+    navigator.geolocation.getCurrentPosition(position => {
       this.center = {
         lat: position.coords.latitude,
         lng: position.coords.longitude,
-      };
-     });
-     axios
-       .get('https://interview.superology.dev/betshops', {
-         params: {
-           boundingBox:`${this.center.lat+0.024086},${this.center.lng+0.024086},${this.center.lat-0.024086},${this.center.lng-0.024086}`
-         }
-       })
-       .then(response =>
-         (this.betshops = response.data.betshops)
-       ).catch(function (error) {
-         console.log(error);
-       })
-   },
-  mounted() {
-    
+      }
+    });
+  },
+  watch: {
+    mapBounds: {
+      handler (newValue) {
+        if(this.$refs.myMap) {
+          this.fetchData(newValue);
+        }
+      },
+      deep:true,
+      immediate: true
+    },
   },
   methods: {
     setPin(index) {
       if(this.selectedIndex === index) return this.pinActive;
       return this.pinNormal;
-
     },
-    toggleInfo: function(marker, index) {
+    toggleInfo(marker, index) {
       this.selectedMarker = marker;
       this.selectedIndex = index;
       this.eventBus.selectedMarker = this.selectedMarker;
       this.eventBus.infoOpened = !this.infoOpened;
-
+    },
+    getBounds (event) {
+      if(event) {
+        this.mapBounds.southWest.lat = event.getSouthWest().lat();
+        this.mapBounds.southWest.lng = event.getSouthWest().lng();
+        this.mapBounds.northEast.lat = event.getNorthEast().lat();
+        this.mapBounds.northEast.lng = event.getNorthEast().lng();
+      }
+    },
+    fetchData(map) {
+      axios
+      .get('https://interview.superology.dev/betshops', {
+        params: {
+          boundingBox:`${(map.northEast.lat).toFixed(5)},${(map.northEast.lng).toFixed(5)},${(map.southWest.lat).toFixed(5)},${(map.southWest.lng).toFixed(5)}`
+        }
+      }).then(response =>
+        (this.betshops = response.data.betshops)
+      ).catch(function (error) {
+        console.log(error);
+      })
     }
-  },
+  }
 }
 </script>
 <style scoped>
 .map-container {
   border: 2px solid white;
-  width: 400px;
 }
 </style>
